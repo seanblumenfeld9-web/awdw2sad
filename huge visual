@@ -1,0 +1,183 @@
+-- Visual-Only Huge Pet Spawner UI (Sandbox / Studio Concept)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Cleanup existing UI if re-run
+if playerGui:FindFirstChild("HugeSpawnerUI") then
+	playerGui.HugeSpawnerUI:Destroy()
+end
+
+-- 1. Create Main ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "HugeSpawnerUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- 2. Main Window Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 320, 0, 260)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -130)
+mainFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(255, 185, 45)
+mainStroke.Thickness = 2
+mainStroke.Parent = mainFrame
+
+-- 3. Title Bar
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 42)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "🐾 Visual Huge Spawner"
+titleLabel.TextColor3 = Color3.fromRGB(255, 210, 75)
+titleLabel.Font = Enum.Font.FredokaOne
+titleLabel.TextSize = 20
+titleLabel.Parent = mainFrame
+
+-- 4. Pet Name Input Box
+local petInput = Instance.new("TextBox")
+petInput.Size = UDim2.new(0.86, 0, 0, 40)
+petInput.Position = UDim2.new(0.07, 0, 0.2, 0)
+petInput.BackgroundColor3 = Color3.fromRGB(34, 37, 48)
+petInput.Text = ""
+petInput.PlaceholderText = "Enter Huge Name (e.g., Huge Cat)"
+petInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+petInput.PlaceholderColor3 = Color3.fromRGB(140, 145, 160)
+petInput.Font = Enum.Font.GothamBold
+petInput.TextSize = 14
+petInput.Parent = mainFrame
+
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(0, 8)
+inputCorner.Parent = petInput
+
+-- 5. Variant Selector Button (Cycles Normal -> Golden -> Rainbow -> Shiny)
+local variants = {"Normal", "Golden", "Rainbow", "Shiny"}
+local variantColors = {
+	Normal = Color3.fromRGB(70, 140, 255),
+	Golden = Color3.fromRGB(255, 195, 35),
+	Rainbow = Color3.fromRGB(235, 75, 255),
+	Shiny = Color3.fromRGB(65, 235, 190)
+}
+local currentVariantIndex = 1
+
+local variantBtn = Instance.new("TextButton")
+variantBtn.Size = UDim2.new(0.86, 0, 0, 38)
+variantBtn.Position = UDim2.new(0.07, 0, 0.42, 0)
+variantBtn.BackgroundColor3 = variantColors.Normal
+variantBtn.Text = "Variant: Normal (Click to Change)"
+variantBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+variantBtn.Font = Enum.Font.GothamBold
+variantBtn.TextSize = 14
+variantBtn.Parent = mainFrame
+
+local variantCorner = Instance.new("UICorner")
+variantCorner.CornerRadius = UDim.new(0, 8)
+variantCorner.Parent = variantBtn
+
+variantBtn.MouseButton1Click:Connect(function()
+	currentVariantIndex = (currentVariantIndex % #variants) + 1
+	local selected = variants[currentVariantIndex]
+	variantBtn.Text = "Variant: " .. selected .. " (Click to Change)"
+	TweenService:Create(variantBtn, TweenInfo.new(0.2), {
+		BackgroundColor3 = variantColors[selected]
+	}):Play()
+end)
+
+-- 6. Spawn & Visual Dupe Buttons
+local spawnBtn = Instance.new("TextButton")
+spawnBtn.Size = UDim2.new(0.41, 0, 0, 44)
+spawnBtn.Position = UDim2.new(0.07, 0, 0.65, 0)
+spawnBtn.BackgroundColor3 = Color3.fromRGB(45, 200, 105)
+spawnBtn.Text = "Spawn Visual"
+spawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+spawnBtn.Font = Enum.Font.FredokaOne
+spawnBtn.TextSize = 16
+spawnBtn.Parent = mainFrame
+
+local spawnCorner = Instance.new("UICorner")
+spawnCorner.CornerRadius = UDim.new(0, 8)
+spawnCorner.Parent = spawnBtn
+
+local dupeBtn = Instance.new("TextButton")
+dupeBtn.Size = UDim2.new(0.41, 0, 0, 44)
+dupeBtn.Position = UDim2.new(0.52, 0, 0.65, 0)
+dupeBtn.BackgroundColor3 = Color3.fromRGB(155, 85, 255)
+dupeBtn.Text = "Dupe x2 Visual"
+dupeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dupeBtn.Font = Enum.Font.FredokaOne
+dupeBtn.TextSize = 16
+dupeBtn.Parent = mainFrame
+
+local dupeCorner = Instance.new("UICorner")
+dupeCorner.CornerRadius = UDim.new(0, 8)
+dupeCorner.Parent = dupeBtn
+
+-- 7. Animated Popup Notification Function
+local function showVisualPopup(actionText, petName, variant)
+	local banner = Instance.new("Frame")
+	banner.Size = UDim2.new(0, 340, 0, 60)
+	banner.Position = UDim2.new(0.5, -170, 0, -70)
+	banner.BackgroundColor3 = Color3.fromRGB(28, 30, 40)
+	banner.BorderSizePixel = 0
+	banner.Parent = screenGui
+
+	local bCorner = Instance.new("UICorner")
+	bCorner.CornerRadius = UDim.new(0, 10)
+	bCorner.Parent = banner
+
+	local bStroke = Instance.new("UIStroke")
+	bStroke.Color = variantColors[variant]
+	bStroke.Thickness = 2
+	bStroke.Parent = banner
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -20, 1, 0)
+	label.Position = UDim2.new(0, 10, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Text = "✨ " .. actionText .. ": [" .. variant .. "] " .. petName .. "!"
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.Font = Enum.Font.FredokaOne
+	label.TextSize = 16
+	label.TextWrapped = true
+	label.Parent = banner
+
+	-- Slide Down Animation
+	TweenService:Create(banner, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -170, 0, 25)
+	}):Play()
+
+	task.delay(2.5, function()
+		local slideOut = TweenService:Create(banner, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, -170, 0, -70)
+		})
+		slideOut:Play()
+		slideOut.Completed:Connect(function()
+			banner:Destroy()
+		end)
+	end)
+end
+
+-- 8. Button Click Connections
+spawnBtn.MouseButton1Click:Connect(function()
+	local petName = petInput.Text ~= "" and petInput.Text or "Huge Cat"
+	local variant = variants[currentVariantIndex]
+	showVisualPopup("Spawned", petName, variant)
+end)
+
+dupeBtn.MouseButton1Click:Connect(function()
+	local petName = petInput.Text ~= "" and petInput.Text or "Huge Cat"
+	local variant = variants[currentVariantIndex]
+	showVisualPopup("Duplicated (x2)", petName, variant)
+end)
